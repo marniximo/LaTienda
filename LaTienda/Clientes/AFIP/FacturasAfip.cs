@@ -33,7 +33,8 @@ namespace LaTienda.Clientes.AFIP
             var authRequest = new FEAuthRequest
             {
                 Sign = ticket.Sign,
-                Token = ticket.Token
+                Token = ticket.Token,
+                Cuit = 20407268920
             };
             var response = await cliente.FEParamGetTiposCbteAsync(authRequest);
             var list = new List<TipoFactura>();

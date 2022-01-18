@@ -23,7 +23,8 @@ namespace LaTienda.Clientes.AFIP
             {
                 var objTicketRespuesta = new LoginTicket();
                 var response = await objTicketRespuesta.ObtenerLoginTicketResponse();
-                var newTicket = new TicketAutenticacion {
+                var newTicket = new TicketAutenticacion
+                {
                     ExpirationTime = objTicketRespuesta.ExpirationTime,
                     GenerationTime = objTicketRespuesta.GenerationTime,
                     Id = Guid.NewGuid(),
@@ -35,7 +36,11 @@ namespace LaTienda.Clientes.AFIP
                 _ticketRepository.Create(newTicket);
                 return newTicket;
             }
-            else return dbTicket;
+            else
+            {
+                _ticket = dbTicket;
+                return dbTicket;
+            }
         }
 
         public async Task<FECAESolicitarResponse> EnviarFactura(Venta venta) 
