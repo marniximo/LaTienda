@@ -57,6 +57,12 @@ namespace LaTienda.Models
 
             modelBuilder.Entity<TicketAutenticacion>();
 
+            modelBuilder.Entity<Empleado>();
+
+            modelBuilder.Entity<Marca>()
+                .HasMany(m=>m.Productos)
+                .WithOne(p=>p.Marca)
+                .HasForeignKey(p=>p.IdMarca);
 
         }
 
