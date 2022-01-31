@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LaTienda.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20220106190109_ticketAutenticacion")]
-    partial class ticketAutenticacion
+    [Migration("20220131210728_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -36,7 +36,7 @@ namespace LaTienda.Migrations
 
                     b.HasKey("CUIT");
 
-                    b.ToTable("Cliente");
+                    b.ToTable("Clientes");
                 });
 
             modelBuilder.Entity("LaTienda.Models.Color", b =>
@@ -50,7 +50,18 @@ namespace LaTienda.Migrations
 
                     b.HasKey("Codigo");
 
-                    b.ToTable("Color");
+                    b.ToTable("Colores");
+                });
+
+            modelBuilder.Entity("LaTienda.Models.Empleado", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Empleados");
                 });
 
             modelBuilder.Entity("LaTienda.Models.LineaStock", b =>
@@ -84,7 +95,7 @@ namespace LaTienda.Migrations
 
                     b.HasIndex("IdTalle");
 
-                    b.ToTable("LineaStock");
+                    b.ToTable("LineasStock");
                 });
 
             modelBuilder.Entity("LaTienda.Models.LineaVenta", b =>
@@ -114,7 +125,7 @@ namespace LaTienda.Migrations
 
                     b.HasIndex("IdVenta");
 
-                    b.ToTable("LineaVenta");
+                    b.ToTable("LineasVenta");
                 });
 
             modelBuilder.Entity("LaTienda.Models.Marca", b =>
@@ -128,7 +139,7 @@ namespace LaTienda.Migrations
 
                     b.HasKey("Codigo");
 
-                    b.ToTable("Marca");
+                    b.ToTable("Marcas");
                 });
 
             modelBuilder.Entity("LaTienda.Models.Producto", b =>
@@ -159,7 +170,24 @@ namespace LaTienda.Migrations
 
                     b.HasIndex("IdMarca");
 
-                    b.ToTable("Producto");
+                    b.ToTable("Productos");
+                });
+
+            modelBuilder.Entity("LaTienda.Models.PuntoVenta", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid?>("UsuarioAcutalLegajo")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioAcutalLegajo");
+
+                    b.ToTable("PuntosVenta");
                 });
 
             modelBuilder.Entity("LaTienda.Models.Sucursal", b =>
@@ -173,7 +201,7 @@ namespace LaTienda.Migrations
 
                     b.HasKey("Codigo");
 
-                    b.ToTable("Sucursal");
+                    b.ToTable("Sucursales");
                 });
 
             modelBuilder.Entity("LaTienda.Models.Talle", b =>
@@ -187,7 +215,7 @@ namespace LaTienda.Migrations
 
                     b.HasKey("Codigo");
 
-                    b.ToTable("Talle");
+                    b.ToTable("Talles");
                 });
 
             modelBuilder.Entity("LaTienda.Models.TicketAutenticacion", b =>
@@ -213,7 +241,24 @@ namespace LaTienda.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TicketAutenticacion");
+                    b.ToTable("Tickets");
+                });
+
+            modelBuilder.Entity("LaTienda.Models.Usuario", b =>
+                {
+                    b.Property<Guid>("Legajo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Sucursal")
+                        .HasColumnType("int");
+
+                    b.HasKey("Legajo");
+
+                    b.ToTable("Usuarios");
                 });
 
             modelBuilder.Entity("LaTienda.Models.Venta", b =>
@@ -241,7 +286,7 @@ namespace LaTienda.Migrations
 
                     b.HasIndex("CUITCliente");
 
-                    b.ToTable("Venta");
+                    b.ToTable("Ventas");
                 });
 
             modelBuilder.Entity("LaTienda.Models.LineaStock", b =>
@@ -307,6 +352,15 @@ namespace LaTienda.Migrations
                         .IsRequired();
 
                     b.Navigation("Marca");
+                });
+
+            modelBuilder.Entity("LaTienda.Models.PuntoVenta", b =>
+                {
+                    b.HasOne("LaTienda.Models.Usuario", "UsuarioAcutal")
+                        .WithMany()
+                        .HasForeignKey("UsuarioAcutalLegajo");
+
+                    b.Navigation("UsuarioAcutal");
                 });
 
             modelBuilder.Entity("LaTienda.Models.Venta", b =>

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace LaTienda.Migrations
 {
-    public partial class initialMigration : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -18,7 +18,7 @@ namespace LaTienda.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cliente", x => x.CUIT);
+                    table.PrimaryKey("PK_Clientes", x => x.CUIT);
                 });
 
             migrationBuilder.CreateTable(
@@ -30,7 +30,18 @@ namespace LaTienda.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Color", x => x.Codigo);
+                    table.PrimaryKey("PK_Colores", x => x.Codigo);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Empleados",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Empleados", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -42,7 +53,7 @@ namespace LaTienda.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Marca", x => x.Codigo);
+                    table.PrimaryKey("PK_Marcas", x => x.Codigo);
                 });
 
             migrationBuilder.CreateTable(
@@ -54,7 +65,7 @@ namespace LaTienda.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Sucursal", x => x.Codigo);
+                    table.PrimaryKey("PK_Sucursales", x => x.Codigo);
                 });
 
             migrationBuilder.CreateTable(
@@ -66,7 +77,36 @@ namespace LaTienda.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Talle", x => x.Codigo);
+                    table.PrimaryKey("PK_Talles", x => x.Codigo);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tickets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GenerationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpirationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Service = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Sign = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tickets", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Usuarios",
+                columns: table => new
+                {
+                    Legajo = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Sucursal = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Usuarios", x => x.Legajo);
                 });
 
             migrationBuilder.CreateTable(
@@ -82,9 +122,9 @@ namespace LaTienda.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Venta", x => x.Codigo);
+                    table.PrimaryKey("PK_Ventas", x => x.Codigo);
                     table.ForeignKey(
-                        name: "FK_Venta_Cliente_CUITCliente",
+                        name: "FK_Ventas_Clientes_CUITCliente",
                         column: x => x.CUITCliente,
                         principalTable: "Clientes",
                         principalColumn: "CUIT",
@@ -105,13 +145,32 @@ namespace LaTienda.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Producto", x => x.Codigo);
+                    table.PrimaryKey("PK_Productos", x => x.Codigo);
                     table.ForeignKey(
-                        name: "FK_Producto_Marca_IdMarca",
+                        name: "FK_Productos_Marcas_IdMarca",
                         column: x => x.IdMarca,
                         principalTable: "Marcas",
                         principalColumn: "Codigo",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PuntosVenta",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UsuarioAcutalLegajo = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PuntosVenta", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PuntosVenta_Usuarios_UsuarioAcutalLegajo",
+                        column: x => x.UsuarioAcutalLegajo,
+                        principalTable: "Usuarios",
+                        principalColumn: "Legajo",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -127,27 +186,27 @@ namespace LaTienda.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LineaStock", x => x.Codigo);
+                    table.PrimaryKey("PK_LineasStock", x => x.Codigo);
                     table.ForeignKey(
-                        name: "FK_LineaStock_Color_IdColor",
+                        name: "FK_LineasStock_Colores_IdColor",
                         column: x => x.IdColor,
                         principalTable: "Colores",
                         principalColumn: "Codigo",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_LineaStock_Producto_IdProducto",
+                        name: "FK_LineasStock_Productos_IdProducto",
                         column: x => x.IdProducto,
                         principalTable: "Productos",
                         principalColumn: "Codigo",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_LineaStock_Sucursal_IdSucursal",
+                        name: "FK_LineasStock_Sucursales_IdSucursal",
                         column: x => x.IdSucursal,
                         principalTable: "Sucursales",
                         principalColumn: "Codigo",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_LineaStock_Talle_IdTalle",
+                        name: "FK_LineasStock_Talles_IdTalle",
                         column: x => x.IdTalle,
                         principalTable: "Talles",
                         principalColumn: "Codigo",
@@ -167,15 +226,15 @@ namespace LaTienda.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LineaVenta", x => x.Codigo);
+                    table.PrimaryKey("PK_LineasVenta", x => x.Codigo);
                     table.ForeignKey(
-                        name: "FK_LineaVenta_Producto_IdProducto",
+                        name: "FK_LineasVenta_Productos_IdProducto",
                         column: x => x.IdProducto,
                         principalTable: "Productos",
                         principalColumn: "Codigo",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_LineaVenta_Venta_IdVenta",
+                        name: "FK_LineasVenta_Ventas_IdVenta",
                         column: x => x.IdVenta,
                         principalTable: "Ventas",
                         principalColumn: "Codigo",
@@ -183,42 +242,47 @@ namespace LaTienda.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_LineaStock_IdColor",
+                name: "IX_LineasStock_IdColor",
                 table: "LineasStock",
                 column: "IdColor");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LineaStock_IdProducto",
+                name: "IX_LineasStock_IdProducto",
                 table: "LineasStock",
                 column: "IdProducto");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LineaStock_IdSucursal",
+                name: "IX_LineasStock_IdSucursal",
                 table: "LineasStock",
                 column: "IdSucursal");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LineaStock_IdTalle",
+                name: "IX_LineasStock_IdTalle",
                 table: "LineasStock",
                 column: "IdTalle");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LineaVenta_IdProducto",
+                name: "IX_LineasVenta_IdProducto",
                 table: "LineasVenta",
                 column: "IdProducto");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LineaVenta_IdVenta",
+                name: "IX_LineasVenta_IdVenta",
                 table: "LineasVenta",
                 column: "IdVenta");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Producto_IdMarca",
+                name: "IX_Productos_IdMarca",
                 table: "Productos",
                 column: "IdMarca");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Venta_CUITCliente",
+                name: "IX_PuntosVenta_UsuarioAcutalLegajo",
+                table: "PuntosVenta",
+                column: "UsuarioAcutalLegajo");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ventas_CUITCliente",
                 table: "Ventas",
                 column: "CUITCliente");
         }
@@ -226,10 +290,19 @@ namespace LaTienda.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Empleados");
+
+            migrationBuilder.DropTable(
                 name: "LineasStock");
 
             migrationBuilder.DropTable(
                 name: "LineasVenta");
+
+            migrationBuilder.DropTable(
+                name: "PuntosVenta");
+
+            migrationBuilder.DropTable(
+                name: "Tickets");
 
             migrationBuilder.DropTable(
                 name: "Colores");
@@ -245,6 +318,9 @@ namespace LaTienda.Migrations
 
             migrationBuilder.DropTable(
                 name: "Ventas");
+
+            migrationBuilder.DropTable(
+                name: "Usuarios");
 
             migrationBuilder.DropTable(
                 name: "Marcas");
