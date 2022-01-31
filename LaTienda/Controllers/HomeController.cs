@@ -25,7 +25,6 @@ namespace LaTienda.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var a = await _clienteAfip.GetTiposFactura();
             return View();
         }
 
