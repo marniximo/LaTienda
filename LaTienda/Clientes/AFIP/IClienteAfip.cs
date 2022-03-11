@@ -12,5 +12,6 @@ namespace LaTienda.Clientes.AFIP
         Task<TicketAutenticacion> GetLoginTicket();
         Task<FECAESolicitarResponse> EnviarFactura(Venta venta);
         Task<List<TipoFactura>> GetTiposFactura();
+        Task<List<PuntoVenta>> GetPuntosVenta();
     }
 }

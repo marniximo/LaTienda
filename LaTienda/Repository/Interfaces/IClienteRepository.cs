@@ -10,13 +10,13 @@ namespace LaTienda.Repository.Interfaces
     {
         List<Cliente> GetAll();
 
-        Cliente Get(Guid id);
+        Cliente Get(long CUIT);
 
         void Create(Cliente cliente);
 
         void Update(Cliente cliente);
 
-        void Delete(Guid id);
+        void Delete(long CUIT);
 
         bool SaveChanges();
     }

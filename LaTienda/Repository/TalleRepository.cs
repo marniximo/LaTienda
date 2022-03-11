@@ -48,6 +48,7 @@ namespace LaTienda.Repository
             if (talle == null)
                 throw new ArgumentNullException(nameof(talle));
             var entry = _context.Talles.Find(talle.Codigo);
+            entry.Descripcion = talle.Descripcion;
             SaveChanges();
         }
     }

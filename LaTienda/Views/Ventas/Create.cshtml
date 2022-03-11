@@ -1,0 +1,355 @@
+﻿@using Newtonsoft.Json; 
+@{
+    var serializerSettings = new JsonSerializerSettings
+    {
+        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+    };
+}
+@{
+    ViewData["Title"] = "Registrar Venta";
+}
+
+<style>
+    .cuit {
+        display: inline;
+        width: 80%;
+    }
+    .root {
+        
+    }
+    .title {
+        text-align: center;
+    }
+    .section {
+        border-bottom: 1px solid black;
+        padding: 20px 0px;
+    }
+</style>
+<div class="root">
+    <h1 class="title">Registrar Venta</h1>
+
+    <div class="row section clientes">
+        <div class="col-12">
+            <h4 class="title">Buscar Cliente</h4>
+        </div>
+        <div class="col-10">
+            <div class="form-group">
+                <label class="control-label">CUIT: </label>
+                <input class="form-control cuit" id="in_CUIT" />
+                <button class="btn btn-secondary" onclick="buscarCliente()">Buscar</button>
+            </div>
+            <div class="form-group">
+                <label class="control-label">RAZON SOCIAL: </label>
+                <input class="form-control" id="out_razon" readonly />
+            </div>
+            <div class="form-group">
+                <label class="control-label">CONDICION TRIBUTARIA: </label>
+                <input class="form-control" id="out_condicion" readonly />
+            </div>
+            <div class="form-group">
+                <label class="control-label">DOMICILIO: </label>
+                <input class="form-control" id="out_domicilio" readonly />
+            </div>
+        </div>
+    </div>
+
+    <div class="row section carrito">
+        <div class="col-12">
+            <h4 class="title">DATOS DE LA VENTA</h4>
+        </div>
+        <div class="col-4">
+            <div class="form-group">
+                <label class="control-label">CODIGO PRODUCTO: </label>
+                <input class="form-control" id="in_codigoProducto" />
+                <button onclick="buscarProducto()">Buscar</button>
+            </div>
+            <div class="form-group">
+                <label class="control-label">DESCRIPCION: </label>
+                <input class="form-control" id="out_descripcion" readonly />
+            </div>
+            <div class="form-group">
+                <label class="control-label">PRECIO: </label>
+                <input class="form-control" id="out_precio" readonly />
+            </div>
+            <br />
+            <div class="form-group">
+                <label class="control-label">CANTIDAD: </label>
+                <input class="form-control" id="in_cantidad" type="number" />
+            </div>
+            <div class="form-group">
+                <label class="control-label">TALLE: </label>
+                <select class="form-control" id="in_talle" onchange="filtrarLineasStock()" asp-items="ViewBag.Talles"></select>
+            </div>
+            <div class="form-group">
+                <label class="control-label">COLOR: </label>
+                <select class="form-control" id="in_color" onchange="filtrarLineasStock()" asp-items="ViewBag.Colores"></select>
+            </div>
+            <div id="restantes">
+
+            </div>
+            <button onclick="agregarACarrito()">Agregar Producto</button>
+
+        </div>
+        <div class="col-8">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>
+                            Codigo
+                        </th>
+                        <th>
+                            Descripcion
+                        </th>
+                        <th>
+                            Precio
+                        </th>
+                        <th>
+                            IVA
+                        </th>
+                        <th>
+                            Talle
+                        </th>
+                        <th>
+                            Color
+                        </th>
+                        <th>
+                            Cantidad
+                        </th>
+                        <th>
+
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tbody_carrito">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--
+        <div class="row section metodo">
+            <div class="col-12">
+                <h4 class="title">METODO DE PAGO</h4>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Medio de pago: </label>
+                <select class="form-control" id="in_medio" asp-items=ViewBag.MediosPago />
+            </div>
+            <div class="form-group">
+                <label class="control-label">Total: </label>
+                <input class="form-control" id="out_total" readonly  />
+            </div>
+        </div>
+    -->
+
+    <div class="row section registrar">
+        <button class="btn btn-secondary">
+            CANCELAR VENTA
+        </button>
+        <button class="btn btn-primary" onclick="registrarVenta()">
+            REGISTRAR VENTA
+        </button>
+    </div>
+
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<script>
+    var carritoList = [];
+    var productoActual = undefined;
+    var productos = @Html.Raw(JsonConvert.SerializeObject(ViewBag.Productos, serializerSettings));
+    var clienteActual = undefined;
+    var clientes = @Html.Raw(JsonConvert.SerializeObject(ViewBag.Clientes, serializerSettings));
+    var lineaStockActual = undefined;
+    var lineasStockFiltradas = [];
+    var stock = @Html.Raw(JsonConvert.SerializeObject(ViewBag.Stock, serializerSettings));
+    //var sucursal = @Context.User.Identity.Name.Split(':')[1];
+
+    function agregarACarrito() {
+
+        if (!productoActual) {
+            alert("Ingrese un producto primero!")
+            return;
+        }
+
+        let cantidad = $("#in_cantidad").val();
+        let talle = $("#in_talle").val();
+        let talleTexto = $("#in_talle option:selected").text();
+        let color = $("#in_color").val();
+        let colorTexto = $("#in_color option:selected").text();
+
+        let lineaVenta = {
+            IdProducto: productoActual.Codigo,
+            PrecioUnitario: productoActual.Precio,
+            Cantidad: cantidad,
+            SubTotal: productoActual.Precio * cantidad,
+        }
+
+        if (cantidad <= 0) {
+            alert('No se pueden comprar 0 o menos productos');
+            return;
+        }
+
+        let lineaStock = lineasStockFiltradas.filter(s => s.IdProducto == productoActual.Codigo && s.IdColor == color && s.IdTalle == talle)[0];
+
+        if (!lineaStock || cantidad > lineaStock.Stock) {
+            alert('Stock no encontrado o insuficiente!');
+            return;
+        }
+
+        if (carritoList.filter(i => i.lineaStock == lineaStock).length > 0) {
+            alert('Este producto ya se encuentra cargado');
+            return;
+        }
+
+        carritoList.push({ lineaVenta, lineaStock });
+
+        var closureUtil = ((codigo) => {
+            return (tr) => removerDeCarrito(codigo, tr)
+        })(lineaStock.Codigo);
+
+        let tbody = document.getElementById("tbody_carrito");
+        let tr = document.createElement("tr");
+        let tdCodigo = document.createElement("td");
+        tdCodigo.innerHTML = productoActual.Codigo;
+        tr.appendChild(tdCodigo);
+        let tdDescripcion = document.createElement("td");
+        tdDescripcion.innerHTML = productoActual.Descripcion;
+        tr.appendChild(tdDescripcion);
+        let tdPrecio = document.createElement("td");
+        tdPrecio.innerHTML = productoActual.Precio * cantidad;
+        tr.appendChild(tdPrecio);
+        let tdIVA = document.createElement("td");
+        tdIVA.innerHTML = productoActual.IVA * cantidad;
+        tr.appendChild(tdIVA);
+        let tdTalle = document.createElement("td");
+        tdTalle.innerHTML = talleTexto;
+        tr.appendChild(tdTalle);
+        let tdColor = document.createElement("td");
+        tdColor.innerHTML = colorTexto;
+        tr.appendChild(tdColor);
+        let tdCantidad = document.createElement("td");
+        tdCantidad.innerHTML = cantidad;
+        tr.appendChild(tdCantidad);
+        let tdEliminar = document.createElement("td");
+        let buttonEliminar = document.createElement("button")
+        buttonEliminar.innerText = "Eliminar"
+        buttonEliminar.addEventListener("click", () => closureUtil(tr))
+        tdEliminar.appendChild(buttonEliminar);
+        tr.appendChild(tdEliminar);
+
+        tbody.appendChild(tr);
+    }
+
+    function buscarProducto() {
+        let codigo = $("#in_codigoProducto").val();
+        let productoSeleccionado = productos.filter(producto => producto.Codigo == codigo)[0]
+        productoActual = productoSeleccionado;
+        $("#out_descripcion").val(productoSeleccionado.Descripcion);
+        $("#out_precio").val(productoSeleccionado.Precio);
+        filtrarLineasStock();
+    }
+
+    function buscarCliente() {
+        let codigo = $("#in_CUIT").val();
+        let clienteSeleccionado = clientes.filter(cliente => cliente.CUIT == codigo)[0]
+        clienteActual = clienteSeleccionado;
+        $("#out_razon").val(clienteSeleccionado.RazonSocial);
+        $("#out_domicilio").val(clienteSeleccionado.Domicilio);
+        $("#out_condicion").val(clienteSeleccionado.CondicionTributaria);
+    }
+
+    function filtrarLineasStock() {
+        let codigo = productoActual.Codigo;
+        let talle = $("#in_talle").val();
+        let color = $("#in_color").val();
+        lineasStockFiltradas = stock.filter(s => s.IdProducto == codigo);
+        if (talle)
+            lineasStockFiltradas = lineasStockFiltradas.filter(s => s.IdTalle == talle);
+        if (color)
+            lineasStockFiltradas = lineasStockFiltradas.filter(s => s.IdColor == color);
+
+        /*document.getElementById('in_color').innerHTML = '';
+        document.getElementById('in_talle').innerHTML = '';
+
+        let defaultColor = document.createElement('option');
+        defaultColor.innerHTML = 'Seleccionar un color';
+        defaultColor.value = null;
+        defaultColor.disabled = true;
+        document.getElementById('in_color').appendChild(defaultColor);
+
+        let defaultTalle = document.createElement('option');
+        defaultTalle.innerHTML = 'Seleccionar un talle';
+        defaultTalle.value = null;
+        defaultTalle.disabled = true;
+        document.getElementById('in_talle').appendChild(defaultTalle);
+
+        var colores = [];
+        var talles = [];
+        for (var lineaStock of lineasStockFiltradas) {
+            if (!colores.includes(lineaStock.IdColor)) {
+                colores.push(lineaStock.IdColor);
+                let option = document.createElement('option');
+                option.value = lineaStock.IdColor;
+                option.innerHTML = lineaStock.Color.Descripcion;
+                document.getElementById('in_color').appendChild(option);
+            }
+            if (!talles.includes(lineaStock.IdTalle)) {
+                talles.push(lineaStock.IdTalle);
+                let option = document.createElement('option');
+                option.value = lineaStock.IdTalle;
+                option.innerHTML = lineaStock.Talle.Descripcion;
+                document.getElementById('in_talle').appendChild(option);
+            }
+        }*/
+
+        if (lineasStockFiltradas.length == 1) {
+            document.getElementById("restantes").innerHTML = `${lineasStockFiltradas[0].Stock} restantes!`
+        } else if (lineasStockFiltradas.length == 0) {
+            document.getElementById("restantes").innerHTML = `Stock agotado!`
+        }
+        else {
+            document.getElementById("restantes").innerHTML = '';
+        }
+    }
+
+    function removerDeCarrito(codigo, element) {
+        let carritoItem = carritoList.filter(item => item.lineaStock.Codigo == codigo)[0];
+        let index = carritoList.indexOf(carritoItem);
+        carritoList.splice(index, 1);
+        element.remove();
+    }
+
+    function registrarVenta() {
+        if (carritoList.length == 0) {
+            alert('El carrito esta vacio!');
+            return;
+        }
+        let CUIT = clienteActual ? clienteActual.CUIT: 0;
+        $.ajax("", {
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                Carrito: carritoList,
+                CUIT,
+            }),
+        }).then(_ => {
+            alert("Venta Registrada!");
+            location.href = 'example';
+        }).catch(e => {
+            let response = e.responseJSON;
+            if (response.code == 1) {
+                alert('El cliente debe registrarse para realizar esta venta. Redireccionando a la creacion del cliente');
+                location.href = response.redirect;
+            }
+            console.log(e);
+        });
+    }
+</script>

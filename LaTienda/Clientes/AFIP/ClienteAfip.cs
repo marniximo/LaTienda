@@ -52,12 +52,31 @@ namespace LaTienda.Clientes.AFIP
             return response;
         }
 
+        public async Task<FECAESolicitarResponse> GetUltimaFactura(Venta venta)
+        {
+            if (_ticket == null || DateTime.Now > _ticket.ExpirationTime)
+            {
+                await GetLoginTicket();
+            }
+            var response = await FacturasAfip.EnviarFactura(_ticket, venta);
+            return response;
+        }
+
         public async Task<List<TipoFactura>> GetTiposFactura() {
             if (_ticket == null || DateTime.Now > _ticket.ExpirationTime)
             {
                 await GetLoginTicket();
             }
             return await FacturasAfip.GetTiposFactura(_ticket);
+        }
+
+        public async Task<List<PuntoVenta>> GetPuntosVenta()
+        {
+            if (_ticket == null || DateTime.Now > _ticket.ExpirationTime)
+            {
+                await GetLoginTicket();
+            }
+            return await FacturasAfip.GetPuntosVenta(_ticket);
         }
     }
 }

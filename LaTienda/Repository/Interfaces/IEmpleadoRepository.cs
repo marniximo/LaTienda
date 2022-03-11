@@ -12,6 +12,8 @@ namespace LaTienda.Repository.Interfaces
 
         Empleado Get(Guid id);
 
+        Empleado GetByLegajo(string legajo);
+
         void Create(Empleado empleado);
 
         void Update(Empleado empleado);

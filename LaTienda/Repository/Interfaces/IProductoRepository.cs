@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace LaTienda.Repository.Interfaces
 {
-    public interface IPuntoVentaRepository
+    public interface IProductoRepository
     {
-        List<PuntoVenta> GetAll();
+        List<Producto> GetAll();
 
-        PuntoVenta Get(Guid id);
+        Producto Get(Guid id);
 
-        void Create(PuntoVenta pdv);
+        void Create(Producto prdocuto);
 
-        void Update(PuntoVenta pdv);
+        void Update(Producto prdocuto);
 
         void Delete(Guid id);
 

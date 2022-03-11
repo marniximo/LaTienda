@@ -15,6 +15,13 @@ using System.Threading;
 using LaTienda.Repository.Interfaces;
 using LaTienda.Repository;
 using Microsoft.EntityFrameworkCore.Design;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Net;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Newtonsoft.Json;
+
 namespace LaTienda
 {
     public class Startup
@@ -25,6 +32,9 @@ namespace LaTienda
         {
             Configuration = configuration;
             StaticConfig = configuration;
+
+            
+
         }
 
         public IConfiguration Configuration { get; }
@@ -44,6 +54,17 @@ namespace LaTienda
                     });
             });
 
+            //JWT Authentication
+            var key = Encoding.ASCII.GetBytes(Configuration.GetValue<string>("SecretKey"));
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.Cookie.Name = "auth_cookie";
+                options.LoginPath = "/Login/Login";
+                options.AccessDeniedPath = "/Login/Login";
+            });
+
+
             //DbContext
             services.AddDbContext<Context>(opt =>
             {
@@ -57,11 +78,21 @@ namespace LaTienda
                 });
             });
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
             //DI
             services.AddScoped<IClienteAfip, ClienteAfip>();
             services.AddScoped<ILoginTicketRepository, LoginTicketRepository>();
+            services.AddScoped<IClienteRepository, ClienteRepository>();
+            services.AddScoped<IColorRepository, ColorRepository>();
+            services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
+            services.AddScoped<ILineaStockRepository, LineaStockRepository>();
+            services.AddScoped<ILineaVentaRepository, LineaVentaRepository>();
+            services.AddScoped<IMarcaRepository, MarcaRepository>();
+            services.AddScoped<IProductoRepository, ProductoRepository>();
+            services.AddScoped<ISucursalRepository, SucursalRepository>();
+            services.AddScoped<ITalleRepository, TalleRepository>();
+            services.AddScoped<IVentaRepository, VentaRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -99,11 +130,24 @@ namespace LaTienda
                 }
             }
 
+            app.UseStatusCodePages(async context => {
+                var request = context.HttpContext.Request;
+                var response = context.HttpContext.Response;
+
+                if (response.StatusCode == (int)HttpStatusCode.Unauthorized)
+                // you may also check requests path to do this only for specific methods       
+                // && request.Path.Value.StartsWith("/specificPath")
+                {
+                    response.Redirect("/Login/Login");
+                }
+            });
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

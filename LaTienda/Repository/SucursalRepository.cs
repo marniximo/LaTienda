@@ -48,6 +48,7 @@ namespace LaTienda.Repository
             if (sucursal == null)
                 throw new ArgumentNullException(nameof(sucursal));
             var entry = _context.Sucursales.Find(sucursal.Codigo);
+            entry.Descripcion = sucursal.Descripcion;
             SaveChanges();
         }
     }

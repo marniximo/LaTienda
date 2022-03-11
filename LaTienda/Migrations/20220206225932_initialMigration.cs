@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace LaTienda.Migrations
 {
-    public partial class InitialMigration : Migration
+    public partial class initialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,8 +11,7 @@ namespace LaTienda.Migrations
                 name: "Clientes",
                 columns: table => new
                 {
-                    CUIT = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CUIT = table.Column<long>(type: "bigint", nullable: false),
                     RazonSocial = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Domicilio = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -34,17 +33,6 @@ namespace LaTienda.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Empleados",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Empleados", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Marcas",
                 columns: table => new
                 {
@@ -60,7 +48,8 @@ namespace LaTienda.Migrations
                 name: "Sucursales",
                 columns: table => new
                 {
-                    Codigo = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Codigo = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -97,49 +86,14 @@ namespace LaTienda.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Usuarios",
-                columns: table => new
-                {
-                    Legajo = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Sucursal = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Usuarios", x => x.Legajo);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Ventas",
-                columns: table => new
-                {
-                    Codigo = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Total = table.Column<float>(type: "real", nullable: false),
-                    Vendedor = table.Column<int>(type: "int", nullable: false),
-                    CUITCliente = table.Column<long>(type: "bigint", nullable: false),
-                    TipoComprobante = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Ventas", x => x.Codigo);
-                    table.ForeignKey(
-                        name: "FK_Ventas_Clientes_CUITCliente",
-                        column: x => x.CUITCliente,
-                        principalTable: "Clientes",
-                        principalColumn: "CUIT",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Productos",
                 columns: table => new
                 {
-                    Codigo = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Codigo = table.Column<int>(type: "int", nullable: false),
                     Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IdMarca = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Costo = table.Column<float>(type: "real", nullable: false),
-                    NetoGravado = table.Column<float>(type: "real", nullable: false),
+                    IVA = table.Column<float>(type: "real", nullable: false),
                     Precio = table.Column<float>(type: "real", nullable: false),
                     MargenGanancia = table.Column<float>(type: "real", nullable: false)
                 },
@@ -155,22 +109,23 @@ namespace LaTienda.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PuntosVenta",
+                name: "Empleados",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UsuarioAcutalLegajo = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Legajo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CodigoSucursal = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PuntosVenta", x => x.Id);
+                    table.PrimaryKey("PK_Empleados", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PuntosVenta_Usuarios_UsuarioAcutalLegajo",
-                        column: x => x.UsuarioAcutalLegajo,
-                        principalTable: "Usuarios",
-                        principalColumn: "Legajo",
-                        onDelete: ReferentialAction.Restrict);
+                        name: "FK_Empleados_Sucursales_CodigoSucursal",
+                        column: x => x.CodigoSucursal,
+                        principalTable: "Sucursales",
+                        principalColumn: "Codigo",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -178,10 +133,10 @@ namespace LaTienda.Migrations
                 columns: table => new
                 {
                     Codigo = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IdProducto = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IdProducto = table.Column<int>(type: "int", nullable: false),
                     IdColor = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IdTalle = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IdSucursal = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CodigoSucursal = table.Column<int>(type: "int", nullable: false),
                     Stock = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -200,8 +155,8 @@ namespace LaTienda.Migrations
                         principalColumn: "Codigo",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_LineasStock_Sucursales_IdSucursal",
-                        column: x => x.IdSucursal,
+                        name: "FK_LineasStock_Sucursales_CodigoSucursal",
+                        column: x => x.CodigoSucursal,
                         principalTable: "Sucursales",
                         principalColumn: "Codigo",
                         onDelete: ReferentialAction.Cascade);
@@ -214,11 +169,40 @@ namespace LaTienda.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Ventas",
+                columns: table => new
+                {
+                    Codigo = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IVA = table.Column<float>(type: "real", nullable: false),
+                    NetoGravado = table.Column<float>(type: "real", nullable: false),
+                    IdVendedor = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CUITCliente = table.Column<long>(type: "bigint", nullable: false),
+                    TipoComprobante = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ventas", x => x.Codigo);
+                    table.ForeignKey(
+                        name: "FK_Ventas_Clientes_CUITCliente",
+                        column: x => x.CUITCliente,
+                        principalTable: "Clientes",
+                        principalColumn: "CUIT",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Ventas_Empleados_IdVendedor",
+                        column: x => x.IdVendedor,
+                        principalTable: "Empleados",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LineasVenta",
                 columns: table => new
                 {
                     Codigo = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IdProducto = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IdProducto = table.Column<int>(type: "int", nullable: false),
                     PrecioUnitario = table.Column<float>(type: "real", nullable: false),
                     Cantidad = table.Column<int>(type: "int", nullable: false),
                     Subtotal = table.Column<float>(type: "real", nullable: false),
@@ -242,6 +226,16 @@ namespace LaTienda.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Empleados_CodigoSucursal",
+                table: "Empleados",
+                column: "CodigoSucursal");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LineasStock_CodigoSucursal",
+                table: "LineasStock",
+                column: "CodigoSucursal");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_LineasStock_IdColor",
                 table: "LineasStock",
                 column: "IdColor");
@@ -250,11 +244,6 @@ namespace LaTienda.Migrations
                 name: "IX_LineasStock_IdProducto",
                 table: "LineasStock",
                 column: "IdProducto");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LineasStock_IdSucursal",
-                table: "LineasStock",
-                column: "IdSucursal");
 
             migrationBuilder.CreateIndex(
                 name: "IX_LineasStock_IdTalle",
@@ -277,21 +266,18 @@ namespace LaTienda.Migrations
                 column: "IdMarca");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PuntosVenta_UsuarioAcutalLegajo",
-                table: "PuntosVenta",
-                column: "UsuarioAcutalLegajo");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Ventas_CUITCliente",
                 table: "Ventas",
                 column: "CUITCliente");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ventas_IdVendedor",
+                table: "Ventas",
+                column: "IdVendedor");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Empleados");
-
             migrationBuilder.DropTable(
                 name: "LineasStock");
 
@@ -299,16 +285,10 @@ namespace LaTienda.Migrations
                 name: "LineasVenta");
 
             migrationBuilder.DropTable(
-                name: "PuntosVenta");
-
-            migrationBuilder.DropTable(
                 name: "Tickets");
 
             migrationBuilder.DropTable(
                 name: "Colores");
-
-            migrationBuilder.DropTable(
-                name: "Sucursales");
 
             migrationBuilder.DropTable(
                 name: "Talles");
@@ -320,13 +300,16 @@ namespace LaTienda.Migrations
                 name: "Ventas");
 
             migrationBuilder.DropTable(
-                name: "Usuarios");
-
-            migrationBuilder.DropTable(
                 name: "Marcas");
 
             migrationBuilder.DropTable(
                 name: "Clientes");
+
+            migrationBuilder.DropTable(
+                name: "Empleados");
+
+            migrationBuilder.DropTable(
+                name: "Sucursales");
         }
     }
 }

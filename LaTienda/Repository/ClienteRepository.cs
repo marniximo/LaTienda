@@ -22,16 +22,16 @@ namespace LaTienda.Repository
             SaveChanges();
         }
 
-        public void Delete(Guid id)
+        public void Delete(long CUIT)
         {
-            var cliente = Get(id);
+            var cliente = Get(CUIT);
             _context.Clientes.Remove(cliente);
             SaveChanges();
         }
 
-        public Cliente Get(Guid id)
+        public Cliente Get(long CUIT)
         {
-            return _context.Clientes.Find(id);
+            return _context.Clientes.Find(CUIT);
         }
 
         public List<Cliente> GetAll()
@@ -51,6 +51,7 @@ namespace LaTienda.Repository
             var entry = _context.Clientes.Find(cliente.CUIT);
             entry.Domicilio = cliente.Domicilio;
             entry.RazonSocial = cliente.RazonSocial;
+            entry.CondicionTributaria = cliente.CondicionTributaria;
             SaveChanges();
         }
     }

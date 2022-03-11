@@ -1,6 +1,7 @@
 ﻿using LaTienda.Clientes.AFIP;
 using LaTienda.Models;
 using LaTienda.Repository.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,19 +12,14 @@ using System.Threading.Tasks;
 
 namespace LaTienda.Controllers
 {
+    [Authorize()]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private IClienteAfip _clienteAfip;
-        private ILoginTicketRepository _loginTicketRepository;
-        public HomeController(ILogger<HomeController> logger, IClienteAfip clienteAfip, ILoginTicketRepository loginTicketRepository)
+        public HomeController()
         {
-            _logger = logger;
-            _clienteAfip = clienteAfip;
-            _loginTicketRepository = loginTicketRepository;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             return View();
         }

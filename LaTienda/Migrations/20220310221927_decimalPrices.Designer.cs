@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LaTienda.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20220131210728_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20220310221927_decimalPrices")]
+    partial class decimalPrices
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -24,9 +24,10 @@ namespace LaTienda.Migrations
             modelBuilder.Entity("LaTienda.Models.Cliente", b =>
                 {
                     b.Property<long>("CUIT")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("CondicionTributaria")
+                        .HasColumnType("int");
 
                     b.Property<string>("Domicilio")
                         .HasColumnType("nvarchar(max)");
@@ -59,7 +60,18 @@ namespace LaTienda.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("CodigoSucursal")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Legajo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CodigoSucursal");
 
                     b.ToTable("Empleados");
                 });
@@ -70,14 +82,14 @@ namespace LaTienda.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("CodigoSucursal")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("IdColor")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("IdProducto")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("IdSucursal")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("IdProducto")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("IdTalle")
                         .HasColumnType("uniqueidentifier");
@@ -87,11 +99,11 @@ namespace LaTienda.Migrations
 
                     b.HasKey("Codigo");
 
+                    b.HasIndex("CodigoSucursal");
+
                     b.HasIndex("IdColor");
 
                     b.HasIndex("IdProducto");
-
-                    b.HasIndex("IdSucursal");
 
                     b.HasIndex("IdTalle");
 
@@ -107,17 +119,17 @@ namespace LaTienda.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("IdProducto")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("IdProducto")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("IdVenta")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<float>("PrecioUnitario")
-                        .HasColumnType("real");
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<float>("Subtotal")
-                        .HasColumnType("real");
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Codigo");
 
@@ -144,27 +156,26 @@ namespace LaTienda.Migrations
 
             modelBuilder.Entity("LaTienda.Models.Producto", b =>
                 {
-                    b.Property<Guid>("Codigo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("Codigo")
+                        .HasColumnType("int");
 
-                    b.Property<float>("Costo")
-                        .HasColumnType("real");
+                    b.Property<decimal>("Costo")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Descripcion")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("IVA")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<Guid>("IdMarca")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<float>("MargenGanancia")
-                        .HasColumnType("real");
+                    b.Property<decimal>("MargenGanancia")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<float>("NetoGravado")
-                        .HasColumnType("real");
-
-                    b.Property<float>("Precio")
-                        .HasColumnType("real");
+                    b.Property<decimal>("Precio")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Codigo");
 
@@ -173,28 +184,12 @@ namespace LaTienda.Migrations
                     b.ToTable("Productos");
                 });
 
-            modelBuilder.Entity("LaTienda.Models.PuntoVenta", b =>
+            modelBuilder.Entity("LaTienda.Models.Sucursal", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Codigo")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<Guid?>("UsuarioAcutalLegajo")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UsuarioAcutalLegajo");
-
-                    b.ToTable("PuntosVenta");
-                });
-
-            modelBuilder.Entity("LaTienda.Models.Sucursal", b =>
-                {
-                    b.Property<Guid>("Codigo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Descripcion")
                         .HasColumnType("nvarchar(max)");
@@ -244,23 +239,6 @@ namespace LaTienda.Migrations
                     b.ToTable("Tickets");
                 });
 
-            modelBuilder.Entity("LaTienda.Models.Usuario", b =>
-                {
-                    b.Property<Guid>("Legajo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Password")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Sucursal")
-                        .HasColumnType("int");
-
-                    b.HasKey("Legajo");
-
-                    b.ToTable("Usuarios");
-                });
-
             modelBuilder.Entity("LaTienda.Models.Venta", b =>
                 {
                     b.Property<Guid>("Codigo")
@@ -273,24 +251,46 @@ namespace LaTienda.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("IVA")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("IdVendedor")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("NetoGravado")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("TipoComprobante")
-                        .HasColumnType("int");
-
-                    b.Property<float>("Total")
-                        .HasColumnType("real");
-
-                    b.Property<int>("Vendedor")
                         .HasColumnType("int");
 
                     b.HasKey("Codigo");
 
                     b.HasIndex("CUITCliente");
 
+                    b.HasIndex("IdVendedor");
+
                     b.ToTable("Ventas");
+                });
+
+            modelBuilder.Entity("LaTienda.Models.Empleado", b =>
+                {
+                    b.HasOne("LaTienda.Models.Sucursal", "Sucursal")
+                        .WithMany("Empleados")
+                        .HasForeignKey("CodigoSucursal")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sucursal");
                 });
 
             modelBuilder.Entity("LaTienda.Models.LineaStock", b =>
                 {
+                    b.HasOne("LaTienda.Models.Sucursal", "Sucursal")
+                        .WithMany()
+                        .HasForeignKey("CodigoSucursal")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("LaTienda.Models.Color", "Color")
                         .WithMany()
                         .HasForeignKey("IdColor")
@@ -300,12 +300,6 @@ namespace LaTienda.Migrations
                     b.HasOne("LaTienda.Models.Producto", "Producto")
                         .WithMany("LineasStock")
                         .HasForeignKey("IdProducto")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LaTienda.Models.Sucursal", "Sucursal")
-                        .WithMany()
-                        .HasForeignKey("IdSucursal")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -354,15 +348,6 @@ namespace LaTienda.Migrations
                     b.Navigation("Marca");
                 });
 
-            modelBuilder.Entity("LaTienda.Models.PuntoVenta", b =>
-                {
-                    b.HasOne("LaTienda.Models.Usuario", "UsuarioAcutal")
-                        .WithMany()
-                        .HasForeignKey("UsuarioAcutalLegajo");
-
-                    b.Navigation("UsuarioAcutal");
-                });
-
             modelBuilder.Entity("LaTienda.Models.Venta", b =>
                 {
                     b.HasOne("LaTienda.Models.Cliente", "Cliente")
@@ -371,10 +356,23 @@ namespace LaTienda.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("LaTienda.Models.Empleado", "Vendedor")
+                        .WithMany("Ventas")
+                        .HasForeignKey("IdVendedor")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Cliente");
+
+                    b.Navigation("Vendedor");
                 });
 
             modelBuilder.Entity("LaTienda.Models.Cliente", b =>
+                {
+                    b.Navigation("Ventas");
+                });
+
+            modelBuilder.Entity("LaTienda.Models.Empleado", b =>
                 {
                     b.Navigation("Ventas");
                 });
@@ -389,6 +387,11 @@ namespace LaTienda.Migrations
                     b.Navigation("LineasStock");
 
                     b.Navigation("LineasVenta");
+                });
+
+            modelBuilder.Entity("LaTienda.Models.Sucursal", b =>
+                {
+                    b.Navigation("Empleados");
                 });
 
             modelBuilder.Entity("LaTienda.Models.Venta", b =>

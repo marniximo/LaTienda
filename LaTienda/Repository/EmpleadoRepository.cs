@@ -38,6 +38,11 @@ namespace LaTienda.Repository
             return _context.Empleados.ToList();
         }
 
+        public Empleado GetByLegajo(string legajo)
+        {
+            return _context.Empleados.FirstOrDefault(e => e.Legajo == legajo);
+        }
+
         public bool SaveChanges()
         {
             return _context.SaveChanges() >= 0;
@@ -48,6 +53,9 @@ namespace LaTienda.Repository
             if (empleado == null)
                 throw new ArgumentNullException(nameof(empleado));
             var entry = _context.Empleados.Find(empleado.Id);
+            entry.CodigoSucursal = empleado.CodigoSucursal;
+            entry.Legajo = empleado.Legajo;
+            entry.Password = empleado.Password;
             SaveChanges();
         }
     }

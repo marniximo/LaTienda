@@ -13,6 +13,10 @@ namespace LaTienda.Models
 
         }
 
+        public void ApplySeeds() {
+            
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<LineaStock>()
@@ -33,7 +37,7 @@ namespace LaTienda.Models
             modelBuilder.Entity<LineaStock>()
                 .HasOne(l => l.Sucursal)
                 .WithMany()
-                .HasForeignKey(l => l.IdSucursal);
+                .HasForeignKey(l => l.CodigoSucursal);
 
             modelBuilder.Entity<LineaVenta>()
                 .HasOne(l => l.Producto)
@@ -55,9 +59,17 @@ namespace LaTienda.Models
                 .WithMany(m => m.Ventas)
                 .HasForeignKey(p => p.CUITCliente);
 
+            modelBuilder.Entity<Venta>()
+                .HasOne(v => v.Vendedor)
+                .WithMany(v => v.Ventas)
+                .HasForeignKey(v => v.IdVendedor);
+
             modelBuilder.Entity<TicketAutenticacion>();
 
-            modelBuilder.Entity<Empleado>();
+            modelBuilder.Entity<Empleado>()
+                .HasOne(e => e.Sucursal)
+                .WithMany(s => s.Empleados)
+                .HasForeignKey(e => e.CodigoSucursal);
 
             modelBuilder.Entity<Marca>()
                 .HasMany(m=>m.Productos)
@@ -74,10 +86,8 @@ namespace LaTienda.Models
         public DbSet<LineaVenta> LineasVenta { get; set; }
         public DbSet<Marca> Marcas { get; set; }
         public DbSet<Producto> Productos { get; set; }
-        public DbSet<PuntoVenta> PuntosVenta { get; set; }
         public DbSet<Sucursal> Sucursales { get; set; }
         public DbSet<Talle> Talles { get; set; }
-        public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Venta> Ventas { get; set; }
     }
 }

@@ -1,12 +1,13 @@
 ﻿using LaTienda.Models;
 using LaTienda.Repository.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace LaTienda.Repository
 {
-    public class ProductoRepository : IProductoRepositoryy
+    public class ProductoRepository : IProductoRepository
     {
         private Context _context;
 
@@ -55,7 +56,7 @@ namespace LaTienda.Repository
             entry.LineasVenta = producto.LineasVenta;
             entry.Marca = producto.Marca;
             entry.MargenGanancia = producto.MargenGanancia;
-            entry.NetoGravado = producto.NetoGravado;
+            entry.IVA = producto.IVA;
             entry.Precio = producto.Precio;
             SaveChanges();
         }

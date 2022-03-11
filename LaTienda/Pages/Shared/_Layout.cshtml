@@ -6,6 +6,8 @@
     <title>@ViewData["Title"] - LaTienda</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>$.ajaxSetup({ xhrFields: { withCredentials: true } })</script>
 </head>
 <body>
     <header>
@@ -26,6 +28,7 @@
                         </li>
                     </ul>
                 </div>
+                
             </div>
         </nav>
     </header>
@@ -41,7 +44,6 @@
         </div>
     </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 

@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Delete";
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="control-label" />
+            <input id="legajo" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label class="control-label" />
+            <input id="password" type="password" class="form-control" />
+        </div>
+        <div class="form-group">
+            <button class="btn btn-primary" onclick="login()">Login</button>
+        </div>
+    </div>
+</div>
+<div id="error" class="error">
+
+</div>
+
+<script>
+    function login() {
+        let Legajo = $("#legajo").val();
+        let Password = $("#password").val();
+        fetch("", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                Legajo,
+                Password,
+            }),
+            credentials: "same-origin"
+        }).then( _ => {
+            window.location.replace("/Home");
+        }).catch((errorMsg) => {
+            let error = document.getElementById("error");
+            error.style.display = 'block';
+            error.innerText = errorMsg;
+            console.error(errorMsg);
+        });
+    }
+</script>
+
+

@@ -10,7 +10,11 @@ namespace LaTienda.Repository.Interfaces
     {
         List<LineaStock> GetAll();
 
+        List<LineaStock> GetByProducto(int codigoProducto);
+
         LineaStock Get(Guid id);
+
+        LineaStock GeyByDescripcion(int codigoProducto, Guid talle, Guid color);
 
         void Create(LineaStock lineaStock);
 

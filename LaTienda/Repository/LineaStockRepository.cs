@@ -1,5 +1,6 @@
 ﻿using LaTienda.Models;
 using LaTienda.Repository.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,9 +34,14 @@ namespace LaTienda.Repository
             return _context.LineasStock.Find(id);
         }
 
+        public LineaStock GeyByDescripcion(int codigoProducto, Guid talle, Guid color)
+        {
+            return _context.LineasStock.FirstOrDefault(l => l.IdProducto == codigoProducto && l.IdColor == color && l.IdTalle == talle);
+        }
+
         public List<LineaStock> GetAll()
         {
-            return _context.LineasStock.ToList();
+            return _context.LineasStock.Include(s=>s.Color).Include(s=>s.Talle).ToList();
         }
 
         public bool SaveChanges()
@@ -51,13 +57,18 @@ namespace LaTienda.Repository
             entry.IdColor = lineaStock.IdColor;
             entry.Color = lineaStock.Color;
             entry.IdProducto = lineaStock.IdProducto;
-            entry.IdSucursal = lineaStock.IdSucursal;
+            entry.CodigoSucursal = lineaStock.CodigoSucursal;
             entry.IdTalle = lineaStock.IdTalle;
             entry.Producto = lineaStock.Producto;
             entry.Stock = lineaStock.Stock;
             entry.Sucursal = lineaStock.Sucursal;
             entry.Talle = lineaStock.Talle;
             SaveChanges();
+        }
+
+        public List<LineaStock> GetByProducto(int codigoProducto)
+        {
+            return _context.LineasStock.Where(l => l.IdProducto == codigoProducto).ToList();
         }
     }
 }

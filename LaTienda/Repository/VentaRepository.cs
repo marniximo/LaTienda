@@ -1,5 +1,6 @@
 ﻿using LaTienda.Models;
 using LaTienda.Repository.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +36,7 @@ namespace LaTienda.Repository
 
         public List<Venta> GetAll()
         {
-            return _context.Ventas.ToList();
+            return _context.Ventas.Include(v=>v.Cliente).Include(v=>v.Vendedor).ToList();
         }
 
         public bool SaveChanges()
