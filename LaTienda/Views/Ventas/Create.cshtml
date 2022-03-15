@@ -101,19 +101,22 @@
                             Descripcion
                         </th>
                         <th>
-                            Precio
-                        </th>
-                        <th>
-                            IVA
-                        </th>
-                        <th>
                             Talle
                         </th>
                         <th>
                             Color
                         </th>
                         <th>
+                            Precio Unitario
+                        </th>
+                        <th>
                             Cantidad
+                        </th>
+                        <th>
+                            SubTotal
+                        </th>
+                        <th>
+                            IVA
                         </th>
                         <th>
 
@@ -123,6 +126,9 @@
                 <tbody id="tbody_carrito">
                 </tbody>
             </table>
+            <div id="divTotal">
+                Total: $0
+            </div>
         </div>
     </div>
 
@@ -170,6 +176,7 @@
     var lineaStockActual = undefined;
     var lineasStockFiltradas = [];
     var stock = @Html.Raw(JsonConvert.SerializeObject(ViewBag.Stock, serializerSettings));
+    var total = 0;
     //var sucursal = @Context.User.Identity.Name.Split(':')[1];
 
     function agregarACarrito() {
@@ -190,6 +197,7 @@
             PrecioUnitario: productoActual.Precio,
             Cantidad: cantidad,
             SubTotal: productoActual.Precio * cantidad,
+            IVA: productoActual.IVA * cantidad,
         }
 
         if (cantidad <= 0) {
@@ -223,27 +231,33 @@
         let tdDescripcion = document.createElement("td");
         tdDescripcion.innerHTML = productoActual.Descripcion;
         tr.appendChild(tdDescripcion);
-        let tdPrecio = document.createElement("td");
-        tdPrecio.innerHTML = productoActual.Precio * cantidad;
-        tr.appendChild(tdPrecio);
-        let tdIVA = document.createElement("td");
-        tdIVA.innerHTML = productoActual.IVA * cantidad;
-        tr.appendChild(tdIVA);
         let tdTalle = document.createElement("td");
         tdTalle.innerHTML = talleTexto;
         tr.appendChild(tdTalle);
         let tdColor = document.createElement("td");
         tdColor.innerHTML = colorTexto;
         tr.appendChild(tdColor);
+        let tdPrecio = document.createElement("td");
+        tdPrecio.innerHTML = productoActual.Precio;
+        tr.appendChild(tdPrecio);
         let tdCantidad = document.createElement("td");
         tdCantidad.innerHTML = cantidad;
         tr.appendChild(tdCantidad);
+        let tdSubTotal = document.createElement("td");
+        tdSubTotal.innerHTML = productoActual.Precio * cantidad;
+        tr.appendChild(tdSubTotal);
+        let tdIVA = document.createElement("td");
+        tdIVA.innerHTML = productoActual.IVA * cantidad;
+        tr.appendChild(tdIVA);
         let tdEliminar = document.createElement("td");
         let buttonEliminar = document.createElement("button")
         buttonEliminar.innerText = "Eliminar"
         buttonEliminar.addEventListener("click", () => closureUtil(tr))
         tdEliminar.appendChild(buttonEliminar);
         tr.appendChild(tdEliminar);
+
+        total += productoActual.IVA * cantidad + productoActual.Precio * cantidad;
+        $("#divTotal").html(`Total: $${total}`);
 
         tbody.appendChild(tr);
     }
@@ -325,6 +339,8 @@
         let index = carritoList.indexOf(carritoItem);
         carritoList.splice(index, 1);
         element.remove();
+        total -= carritoItem.lineaVenta.SubTotal + carritoItem.lineaVenta.IVA
+        $("#divTotal").html(`Total: ${total}`);
     }
 
     function registrarVenta() {
@@ -340,9 +356,10 @@
                 Carrito: carritoList,
                 CUIT,
             }),
-        }).then(_ => {
+        }).then(venta => {
             alert("Venta Registrada!");
-            location.href = 'example';
+            total = 0;
+            location.href = 'Details/' + venta.codigo;
         }).catch(e => {
             let response = e.responseJSON;
             if (response.code == 1) {

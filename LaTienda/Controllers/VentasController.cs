@@ -15,12 +15,15 @@ using LaTienda.Controllers.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using LaTienda.Services.Interfaces;
 
 namespace LaTienda.Controllers
 {
     [Authorize]
     public class VentasController : Controller
     {
+        private readonly ILogger<VentasController> _logger;
+        private readonly IVentaService _ventaService;
         private IClienteRepository _clienteRepository;
         private IVentaRepository _ventaRepository;
         private IProductoRepository _productoRepository;
@@ -31,27 +34,28 @@ namespace LaTienda.Controllers
         private IColorRepository _colorRepository;
         private ILineaStockRepository _lineaStockRepository;
         private ILineaVentaRepository _lineaVentaRepository;
-        private readonly ILogger<HomeController> _logger;
 
         public VentasController(
+            ILogger<VentasController> logger,
+            IVentaService ventaService,
             IVentaRepository ventaRepository,
             IClienteRepository clienteRepository,
             IProductoRepository productoRepository,
             IEmpleadoRepository empleadoRepository,
-            ILogger<HomeController> logger,
             IClienteAfip clienteAfip,
             ILoginTicketRepository loginTicketRepository,
             ITalleRepository talleRepository,
             IColorRepository colorRepository,
             ILineaStockRepository lineaStockRepository,
             ILineaVentaRepository lineaVentaRepository
-            )
+        )
         {  
+            _logger = logger;
+            _ventaService = ventaService;
             _ventaRepository = ventaRepository;
             _clienteRepository = clienteRepository;
             _productoRepository = productoRepository;
             _empleadoRepository = empleadoRepository;
-            _logger = logger;
             _clienteAfip = clienteAfip;
             _loginTicketRepository = loginTicketRepository;
             _talleRepository = talleRepository;
@@ -96,7 +100,7 @@ namespace LaTienda.Controllers
             return View();
         }
 
-        // GET: Ventas/Comrpobante/5
+        // GET: Ventas/Comprobante/5
         public IActionResult Comprobante(Guid? id)
         {
             if (id == null)
@@ -121,57 +125,29 @@ namespace LaTienda.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody]VentaCreateRequest request)
         {
-            string legajo = HttpContext.User.Identity.Name.Split(":")[1];
-            var empleado = _empleadoRepository.GetByLegajo(legajo);
-            if (!Venta.ValidarCarrito(request.Carrito)) {
-                return BadRequest(new
-                {
-                    Code = 2,
-                    Message = "Carrito invalido"
-                });
+            string legajo = HttpContext.User.Identity.Name.Split(":")[0];
+            var result = await _ventaService.CrearVenta(legajo, request.Carrito, request.CUIT);
+            switch (result.CodigoError)
+            {
+                case 0:
+                    return Ok(result.Venta);
+                case 1:
+                    return BadRequest(new
+                    {
+                        Code = 1,
+                        Redirect = "/Clientes/Create"
+                    });
+                case 2:
+                    return BadRequest(new
+                    {
+                        Code = 2,
+                        Message = "Carrito invalido"
+                    });
             }
-            Venta venta = new Venta
-            {
-                CUITCliente = request.CUIT,
-                Cliente  = _clienteRepository.Get(request.CUIT),
-                Codigo = Guid.NewGuid(),
-                Fecha = DateTime.Now,
-                IdVendedor = empleado.Id,
-                NetoGravado = 0,
-                IVA = 0,
-            };
-            request.Carrito.ForEach(c =>
-            {
-                c.LineaVenta.Codigo = Guid.NewGuid();
-                c.LineaVenta.IdVenta = venta.Codigo;
-                venta.CalcularCarrito(c);
-            });
-            if (!venta.ValidarCliente())
-            {
-                return BadRequest(new
-                {
-                    Code = 1,
-                    Redirect = "/Clientes/Create"
-                });
-            }
-            if (ModelState.IsValid)
-            {
-                _ventaRepository.Create(venta);
-                request.Carrito.ForEach(c => {
-                    var stock = _lineaStockRepository.Get(c.LineaStock.Codigo);
-                    stock.Stock -= c.LineaVenta.Cantidad;
-                    _lineaStockRepository.Update(stock);
-                    _lineaVentaRepository.Create(c.LineaVenta);
-                });
-                await venta.RegistrarAfip(_clienteAfip);
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["TipoComprobante"] = new SelectList(await _clienteAfip.GetTiposFactura(), "Id", "Descripcion");
-            ViewData["CUITCliente"] = new SelectList(_clienteRepository.GetAll(), "CUIT", "RazonSocial");
-            ViewData["Productos"] = _productoRepository.GetAll();
-            return View(venta);
+            return BadRequest(new {Message="Error no identificado"});
         }
 
+        //vista a pdf
         [NonAction]
         private async Task<string> RenderViewAsync<TModel>(string viewName, TModel model, bool partial = false)
         {

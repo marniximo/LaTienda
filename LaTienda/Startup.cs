@@ -14,13 +14,14 @@ using LaTienda.Models;
 using System.Threading;
 using LaTienda.Repository.Interfaces;
 using LaTienda.Repository;
-using Microsoft.EntityFrameworkCore.Design;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Net;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Newtonsoft.Json;
+using LaTienda.Services.Interfaces;
+using LaTienda.Services;
 
 namespace LaTienda
 {
@@ -32,9 +33,6 @@ namespace LaTienda
         {
             Configuration = configuration;
             StaticConfig = configuration;
-
-            
-
         }
 
         public IConfiguration Configuration { get; }
@@ -42,7 +40,7 @@ namespace LaTienda
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //Allow CORS
+            //Allow CORS  -- Para poder pedir recursos desde otro origen
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
@@ -54,7 +52,7 @@ namespace LaTienda
                     });
             });
 
-            //JWT Authentication
+            //JWT Authentication -- para poder hacer el login
             var key = Encoding.ASCII.GetBytes(Configuration.GetValue<string>("SecretKey"));
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
@@ -65,7 +63,7 @@ namespace LaTienda
             });
 
 
-            //DbContext
+            //DbContext -- configuracion de base de datos
             services.AddDbContext<Context>(opt =>
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("AppConnection"),
@@ -80,7 +78,7 @@ namespace LaTienda
 
             services.AddControllersWithViews().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
-            //DI
+            //DI -- inyeccion de dependencias para no instanciar las clases
             services.AddScoped<IClienteAfip, ClienteAfip>();
             services.AddScoped<ILoginTicketRepository, LoginTicketRepository>();
             services.AddScoped<IClienteRepository, ClienteRepository>();
@@ -93,6 +91,7 @@ namespace LaTienda
             services.AddScoped<ISucursalRepository, SucursalRepository>();
             services.AddScoped<ITalleRepository, TalleRepository>();
             services.AddScoped<IVentaRepository, VentaRepository>();
+            services.AddScoped<IVentaService, VentaService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -130,6 +129,7 @@ namespace LaTienda
                 }
             }
 
+            // se usa para redireccionar al login en caso de unauthorized
             app.UseStatusCodePages(async context => {
                 var request = context.HttpContext.Request;
                 var response = context.HttpContext.Response;
